@@ -10,16 +10,16 @@
   --gray-500: #666666;
   --gray-700: #333333;
   
-  /* Azul (accent - partículas e destaques) */
-  --blue-primary: #4285F4;
-  --blue-dark: #1A73E8;
-  --blue-light: #669DF6;
+  /* Azul (accent - partículas e destaques) -> Agora Vermelho */
+  --blue-primary: #E53935;
+  --blue-dark: #C62828;
+  --blue-light: #EF5350;
   
   /* Vermelho (urgência) */
   --red-accent: #E53935;
   
   /* Gradientes */
-  --gradient-blue: linear-gradient(135deg, #4285F4 0%, #1A73E8 100%);
+  --gradient-blue: linear-gradient(135deg, #E53935 0%, #C62828 100%);
   --gradient-dark: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
 
   /* Fontes */
@@ -238,14 +238,7 @@ header.scrolled {
   padding: 80px 24px;
 }
 
-#particle-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
+/* #particle-canvas moved to CTA Dark */
 
 .hero-pre {
   font-size: 14px;
@@ -259,7 +252,7 @@ header.scrolled {
 
 .hero h1 {
   font-size: 72px;
-  font-weight: 400;
+  font-weight: 900;
   line-height: 1.1;
   margin-bottom: 16px;
   letter-spacing: -2px;
@@ -267,8 +260,8 @@ header.scrolled {
 
 .hero-sub {
   font-size: 42px;
-  font-weight: 300;
-  color: #555;
+  font-weight: 700;
+  color: #333; /* Darker for better contrast with bold */
   line-height: 1.2;
   margin-bottom: 32px;
   letter-spacing: -1px;
@@ -276,7 +269,8 @@ header.scrolled {
 
 .hero-desc {
   font-size: 18px;
-  color: var(--gray-500);
+  font-weight: 600;
+  color: var(--gray-700); /* Darker for better visibility */
   max-width: 560px;
   margin: 0 auto 48px;
   line-height: 1.6;
@@ -290,6 +284,48 @@ header.scrolled {
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.hero-scribble-bg {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  width: 100%;
+  max-width: 1000px;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+.hero-scribble-bg svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.scribble-line path {
+  fill: none;
+  stroke: rgba(229, 57, 53, 0.3); /* Red with low opacity */
+  stroke-width: 4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: draw-stick-text 0.4s ease-out forwards;
+}
+
+/* Staggering is handled in JS via inline styles on the group */
+
+@keyframes draw-stick-text {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
 }
 
 /* Agentic Section */
@@ -612,6 +648,17 @@ header.scrolled {
   overflow: hidden;
   color: var(--white);
   text-align: center;
+  z-index: 1;
+}
+
+.cta-dark #particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: auto; /* Allow mouse interaction */
 }
 
 .cta-dark-price {
@@ -798,6 +845,43 @@ footer {
   left: -25%;
   width: 150%;
   height: 220%;
+}
+
+/* Scribble Question Marks */
+.scribble-question {
+  position: absolute;
+  width: 40px;
+  height: 60px;
+  opacity: 0;
+  animation: float-question 2s ease-out forwards;
+}
+
+.scribble-question path {
+  fill: none;
+  stroke: #E53935;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes float-question {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8) rotate(var(--rotation));
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(var(--rotation));
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1) rotate(var(--rotation));
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9) rotate(var(--rotation));
+  }
 }
 
 /* Sequential Animation for 4 Arrows */

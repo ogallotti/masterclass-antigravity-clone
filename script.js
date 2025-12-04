@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('particle-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
-        const heroSection = document.querySelector('.hero');
+        const ctaSection = document.querySelector('.cta-dark'); // Changed from hero
 
         let animationFrameId;
         let particles = [];
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Configuration
         const particleCount = 250; // Per spec
-        const colors = ["#4285F4", "#1A73E8", "#669DF6"]; // Per spec
+        const colors = ["#E53935", "#C62828", "#EF5350"]; // Red tones
         const connectionDistance = 150;
         const mouseRepelRadius = 150;
 
@@ -174,7 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function resize() {
-            const rect = heroSection.getBoundingClientRect();
+            if (!ctaSection) return;
+            const rect = ctaSection.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
         }
@@ -187,51 +188,177 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.draw();
             });
             
-            // Draw connections (Grab mode simulation)
-            // Only if mouse is close? Or always? Spec says "line_linked" in grab mode
-            // Let's draw lines between particles close to mouse
-            /*
-            particles.forEach(a => {
-                const dx = mouse.x - a.x;
-                const dy = mouse.y - a.y;
-                const distMouse = Math.sqrt(dx*dx + dy*dy);
-                
-                if (distMouse < 200) {
-                    particles.forEach(b => {
-                        const dx2 = a.x - b.x;
-                        const dy2 = a.y - b.y;
-                        const dist = Math.sqrt(dx2*dx2 + dy2*dy2);
-                        
-                        if (dist < 100) {
-                            ctx.beginPath();
-                            ctx.strokeStyle = a.color;
-                            ctx.lineWidth = 0.5;
-                            ctx.moveTo(a.x, a.y);
-                            ctx.lineTo(b.x, b.y);
-                            ctx.stroke();
-                        }
-                    });
-                }
-            });
-            */
-
             animationFrameId = requestAnimationFrame(animate);
         }
 
         window.addEventListener('resize', resize);
         
-        heroSection.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = e.clientX - rect.left;
-            mouse.y = e.clientY - rect.top;
-        });
-        
-        heroSection.addEventListener('mouseleave', () => {
-            mouse.x = -1000;
-            mouse.y = -1000;
-        });
+        if (ctaSection) {
+            ctaSection.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+            });
+            
+            ctaSection.addEventListener('mouseleave', () => {
+                mouse.x = -1000;
+                mouse.y = -1000;
+            });
+        }
 
         init();
         animate();
     }
+
+    // --- 5. Scribble Question Marks on Viewport (Footer CTA) ---
+    const lastCtaSection = document.getElementById('last-cta');
+    const questionContainer = document.getElementById('question-marks-container');
+    let questionInterval;
+
+    if (lastCtaSection && questionContainer) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Start generating question marks if not already running
+                    if (!questionInterval) {
+                        questionInterval = setInterval(() => {
+                            createQuestionMark();
+                        }, 300); // New question mark every 300ms
+                    }
+                } else {
+                    // Stop generating
+                    if (questionInterval) {
+                        clearInterval(questionInterval);
+                        questionInterval = null;
+                    }
+                }
+            });
+        }, { threshold: 0.1 }); // Trigger when 10% visible
+
+        observer.observe(lastCtaSection);
+    }
+
+    function createQuestionMark() {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.classList.add("scribble-question");
+        svg.setAttribute("viewBox", "0 0 40 60");
+        svg.setAttribute("preserveAspectRatio", "none");
+
+        // Random position
+        const x = Math.random() * 100; // %
+        const y = Math.random() * 100; // %
+        
+        // Random rotation
+        const rotation = (Math.random() - 0.5) * 40; // -20 to 20 deg
+        
+        svg.style.left = `${x}%`;
+        svg.style.top = `${y}%`;
+        svg.style.setProperty('--rotation', `${rotation}deg`);
+
+        // 10 Variations of Scribble Question Marks
+        const paths = [
+            "M10,20 Q20,5 30,20 Q35,35 20,35 M20,45 L20,50", // Original
+            "M12,22 Q22,2 32,22 Q38,38 18,38 M18,48 L18,53", // More curved
+            "M8,18 Q20,0 32,18 Q38,32 20,35 M20,45 L20,50", // Wide top
+            "M15,20 Q20,5 25,20 Q28,35 20,35 M20,45 L20,50", // Narrow
+            "M10,25 Q10,5 20,5 Q30,5 30,25 Q30,40 20,40 M20,48 L20,52", // Loopy
+            "M12,25 C12,5 35,5 25,25 C20,35 20,35 20,40 M20,48 L20,52", // Hook style
+            "M10,20 Q20,8 30,20 Q32,30 22,35 M22,45 L23,49", // Messy
+            "M15,25 Q20,15 25,25 Q28,35 20,35 M20,42 L20,45", // Small
+            "M5,20 Q20,-5 35,20 Q40,40 20,40 M20,50 L20,55", // Big loop
+            "M12,20 Q25,8 32,25 Q35,40 22,38 M20,48 L18,52"  // Tilted
+        ];
+
+        const randomPath = paths[Math.floor(Math.random() * paths.length)];
+
+        // Create path
+        const path = document.createElementNS(svgNS, "path");
+        path.setAttribute("d", randomPath);
+        
+        svg.appendChild(path);
+        questionContainer.appendChild(svg);
+
+        // Remove after animation ends (2s)
+        setTimeout(() => {
+            svg.remove();
+        }, 2000);
+    }
+
+    // --- 6. Hero Scribble Text (Stick Font) ---
+    function drawHeroScribble() {
+        const svg = document.getElementById('hero-scribble-svg');
+        if (!svg) return;
+
+        const letterPaths = {
+            'A': 'M0,40 L15,0 L30,40 M5,25 L25,25',
+            'Á': 'M0,40 L15,0 L30,40 M5,25 L25,25 M15,-10 L25,0',
+            'C': 'M30,10 C30,0 0,0 0,20 C0,40 30,40 30,30',
+            'D': 'M0,0 L0,40 L15,40 C35,40 35,0 15,0 L0,0',
+            'E': 'M25,0 L0,0 L0,40 L25,40 M0,20 L20,20',
+            'F': 'M25,0 L0,0 L0,40 M0,20 L20,20',
+            'G': 'M30,10 C30,0 0,0 0,20 C0,40 30,40 30,20 L15,20',
+            'I': 'M15,0 L15,40',
+            'Í': 'M15,0 L15,40 M15,-10 L25,0',
+            'M': 'M0,40 L0,0 L15,20 L30,0 L30,40',
+            'N': 'M0,40 L0,0 L30,40 L30,0',
+            'O': 'M15,0 C-5,0 -5,40 15,40 C35,40 35,0 15,0',
+            'P': 'M0,40 L0,0 L20,0 C30,0 30,20 20,20 L0,20',
+            'R': 'M0,40 L0,0 L20,0 C30,0 30,20 20,20 L0,20 L30,40',
+            'S': 'M30,5 C0,5 0,20 15,20 C30,20 30,35 0,35',
+            'T': 'M15,0 L15,40 M0,0 L30,0',
+            'U': 'M0,0 L0,30 C0,40 30,40 30,30 L30,0',
+            '4': 'M25,40 L25,0 L0,25 L30,25',
+            '8': 'M15,20 C0,20 0,0 15,0 C30,0 30,20 15,20 C0,20 0,40 15,40 C30,40 30,20 15,20',
+            ' ': ''
+        };
+
+        const lines = [
+            "ESSA PÁGINA",
+            "FOI CRIADA",
+            "EM 48 MINUTOS"
+        ];
+
+        const startY = 80;
+        const lineHeight = 80;
+        const charWidth = 35;
+        const charGap = 10;
+        const svgWidth = 800;
+        
+        let totalDelay = 0.5; // Start delay in seconds
+        const letterDuration = 0.1; // Duration between starting each letter
+
+        lines.forEach((line, lineIndex) => {
+            const lineWidth = line.length * (charWidth + charGap);
+            let startX = (svgWidth - lineWidth) / 2;
+            let currentY = startY + (lineIndex * lineHeight);
+
+            // Group for the line
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.classList.add("scribble-line");
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (letterPaths[char]) {
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute("d", letterPaths[char]);
+                    // Apply translation to position the letter
+                    path.setAttribute("transform", `translate(${startX}, ${currentY})`);
+                    
+                    // Set delay for this specific letter
+                    path.style.animationDelay = `${totalDelay}s`;
+                    
+                    g.appendChild(path);
+                    totalDelay += letterDuration;
+                } else {
+                    // Space adds a small delay
+                    totalDelay += letterDuration;
+                }
+                startX += charWidth + charGap;
+            }
+            svg.appendChild(g);
+        });
+    }
+
+    drawHeroScribble();
 });
